@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#353232"
+    android:padding="24dp"
+    android:theme="@style/AppTheme">
+
+    <!-- Title with gradient -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RD_FLASHLIGHT"
+        android:textSize="20sp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textAppearance="@style/TextAppearance.TitleGradient"/>
+
+    <!-- Countdown Display -->
+
+    <!-- Time Input Card -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#1E1E1E"
+        app:cardCornerRadius="20dp"
+        app:strokeColor="#334D4D4D"
+        app:strokeWidth="1dp"
+        app:layout_constraintTop_toBottomOf="@id/tvCountdown"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="48dp"
+        android:layout_marginHorizontal="16dp">
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Control Buttons -->
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:dividerPadding="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:showDividers="middle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardInput">
+
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStart"
+        style="@style/ControlButton"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_marginStart="84dp"
+        android:layout_marginTop="52dp"
+        android:text="START"
+        app:backgroundTint="#335FDCFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:strokeColor="#5FDCFF"
+        app:strokeWidth="1dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStopService"
+        style="@style/ControlButton"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="84dp"
+        android:text="STOP"
+        app:backgroundTint="#332E3B4D"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:strokeColor="#2E3B4D"
+        app:strokeWidth="1dp" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardInput">
+
+        <!-- Minutes Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/InputStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Minutes">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMinutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLines="1"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Separator -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:text=":"
+            android:textColor="#5FDCFF"
+            android:textSize="24sp" />
+
+        <!-- Seconds Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/InputStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Seconds">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSeconds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLines="1"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvCountdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:shadowColor="#335FDCFF"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="12"
+        android:text="00:00"
+        android:textColor="#FFFFFF"
+        android:textSize="64sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="32dp"
+        android:src="@drawable/rdragon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

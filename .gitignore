@@ -1,0 +1,36 @@
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Local configuration
+local.properties
+
+# Signing keys
+*.jks
+*.keystore
+
+# Android Studio files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kotlin/Java build output
+out/
+
+# Crashlytics and Firebase
+crashlytics-build.properties
+fabric.properties
+
+# Misc
+.cxx/
+
+app/release
