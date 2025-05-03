@@ -1,120 +1,115 @@
 package com.rdragon.rd_flashlightautoshutdown
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.SystemClock
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import android.os.CountDownTimer
-import android.widget.TextView
-import android.content.pm.ActivityInfo
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 
 class MainActivity : AppCompatActivity() {
     private lateinit var tvCountdown: TextView
-    private lateinit var etMinutes: TextInputEditText
-    private lateinit var etSeconds: TextInputEditText
+    private lateinit var etMin: TextInputEditText
+    private lateinit var etSec: TextInputEditText
     private lateinit var btnStart: MaterialButton
     private lateinit var btnStop: MaterialButton
-    private var countdownTimer: CountDownTimer? = null
+    private var timer: CountDownTimer? = null
+    private lateinit var alarmMgr: AlarmManager
+    private lateinit var alarmPi: PendingIntent
+    private lateinit var cameraManager: CameraManager
+    private lateinit var cameraId: String
 
-    companion object {
-        private const val DEVICE_ADMIN_REQUEST_CODE = 1001
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    override fun onCreate(saved: Bundle?) {
+        super.onCreate(saved)
         setContentView(R.layout.activity_main)
 
         tvCountdown = findViewById(R.id.tvCountdown)
-        etMinutes = findViewById(R.id.etMinutes)
-        etSeconds = findViewById(R.id.etSeconds)
-        btnStart = findViewById(R.id.btnStart)
-        btnStop = findViewById(R.id.btnStopService)
+        etMin       = findViewById(R.id.etMinutes)
+        etSec       = findViewById(R.id.etSeconds)
+        btnStart    = findViewById(R.id.btnStart)
+        btnStop     = findViewById(R.id.btnStopService)
+
+        // Камера
+        cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        cameraId = cameraManager.cameraIdList.first { id ->
+            cameraManager.getCameraCharacteristics(id)
+                .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+        }
+
+        // AlarmManager + PendingIntent
+        alarmMgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val offIntent = Intent(this, TorchOffReceiver::class.java)
+        alarmPi = PendingIntent.getBroadcast(
+            this, 0, offIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         btnStart.setOnClickListener {
-            countdownTimer?.cancel()
-
-            val mins = etMinutes.text.toString().toLongOrNull() ?: 0L
-            val secs = etSeconds.text.toString().toLongOrNull() ?: 0L
-            val totalSeconds = mins * 60 + secs
-            if (totalSeconds <= 0) {
+            timer?.cancel()
+            val mins = etMin.text.toString().toLongOrNull() ?: 0L
+            val secs = etSec.text.toString().toLongOrNull() ?: 0L
+            val total = mins*60 + secs
+            if (total <= 0) {
                 Toast.makeText(this, "Укажите время больше нуля", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Запускаем foreground-сервис
-            Intent(this, FlashService::class.java).also { intent ->
-                intent.putExtra("duration", totalSeconds)
-                ContextCompat.startForegroundService(this, intent)
-            }
+            // Включаем фонарик
+            cameraManager.setTorchMode(cameraId, true)
 
-            // Создаём и запускаем CountDownTimer
-            countdownTimer = object : CountDownTimer(totalSeconds * 1000, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    val s = millisUntilFinished / 1000
-                    val display = String.format("%02d:%02d", s / 60, s % 60)
-                    tvCountdown.text = display
+            // Запускаем UI-таймер
+            timer = object: CountDownTimer(total*1000, 1000) {
+                override fun onTick(ms: Long) {
+                    val s = ms/1000
+                    tvCountdown.text = String.format("%02d:%02d", s/60, s%60)
                 }
-
                 override fun onFinish() {
                     tvCountdown.text = "00:00"
                 }
-            }.apply { start() }
+            }.apply{ start() }
+
+            // Ставим Alarm на выключение
+            val trigger = SystemClock.elapsedRealtime() + total*1000
+            alarmMgr.setExactAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP, trigger, alarmPi
+            )
         }
 
         btnStop.setOnClickListener {
-            // Останавливаем сервис
-            stopService(Intent(this, FlashService::class.java))
-            // Останавливаем таймер и сбрасываем дисплей
-            countdownTimer?.cancel()
-            countdownTimer = null
+            // Останавливаем всё
+            timer?.cancel()
+            timer = null
             tvCountdown.text = "00:00"
+            alarmMgr.cancel(alarmPi)
+            cameraManager.setTorchMode(cameraId, false)
         }
 
-        val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+        // Если ещё нет admin-прав — попросим
+        val comp = ComponentName(this, MyDeviceAdminReceiver::class.java)
         val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if (!dpm.isAdminActive(compName)) {
-            requestDeviceAdmin()
+        if (!dpm.isAdminActive(comp)) {
+            startActivity(Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, comp)
+                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                    "Нужны права для блокировки экрана.")
+            })
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // На всякий случай отменяем таймер при выходе из Activity
-        countdownTimer?.cancel()
-    }
-
-    // Обработчик результата запроса администратора (не обязателен, но можно уведомить)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1001 && resultCode != RESULT_OK) {
-            Toast.makeText(
-                this, "Без прав администратора блокировка экрана не сработает",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    private fun requestDeviceAdmin() {
-        val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-            putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName)
-            putExtra(
-                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "Нужны права администратора для блокировки экрана по истечении таймера."
-            )
-        }
-        ActivityCompat.startActivityForResult(
-            this,
-            intent,
-            DEVICE_ADMIN_REQUEST_CODE,
-            null
-        )
+        timer?.cancel()
+        alarmMgr.cancel(alarmPi)
+        cameraManager.setTorchMode(cameraId, false)
     }
 }
