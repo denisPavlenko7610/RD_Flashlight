@@ -117,6 +117,33 @@
         app:layout_constraintTop_toBottomOf="@+id/cardInput">
 
         <!-- Minutes Input -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAdd5Min"
+                style="@style/ControlButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="+5m"
+                app:backgroundTint="#335FDCFF"
+                app:strokeColor="#5FDCFF"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAdd1Min"
+                style="@style/ControlButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="+1m"
+                app:backgroundTint="#335FDCFF"
+                app:strokeColor="#5FDCFF"
+                app:strokeWidth="1dp"/>
+        </LinearLayout>
         <com.google.android.material.textfield.TextInputLayout
             style="@style/InputStyle"
             android:layout_width="0dp"
@@ -126,34 +153,8 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etMinutes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:maxLines="1"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Separator -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:text=":"
-            android:textColor="#5FDCFF"
-            android:textSize="24sp" />
-
-        <!-- Seconds Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/InputStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Seconds">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etSeconds"
-                android:layout_width="match_parent"
+                android:layout_width="216dp"
+                android:layout_marginLeft="20dp"
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:maxLines="1"

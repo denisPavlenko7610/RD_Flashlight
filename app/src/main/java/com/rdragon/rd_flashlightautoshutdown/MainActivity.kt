@@ -20,10 +20,14 @@ import android.hardware.camera2.CameraManager
 class MainActivity : AppCompatActivity() {
     private lateinit var tvCountdown: TextView
     private lateinit var etMin: TextInputEditText
-    private lateinit var etSec: TextInputEditText
     private lateinit var btnStart: MaterialButton
     private lateinit var btnStop: MaterialButton
+    private lateinit var btnAdd1: MaterialButton
+    private lateinit var btnAdd5: MaterialButton
+
     private var timer: CountDownTimer? = null
+    private var timeLeftMs: Long = 0
+
     private lateinit var alarmMgr: AlarmManager
     private lateinit var alarmPi: PendingIntent
     private lateinit var cameraManager: CameraManager
@@ -35,18 +39,17 @@ class MainActivity : AppCompatActivity() {
 
         tvCountdown = findViewById(R.id.tvCountdown)
         etMin       = findViewById(R.id.etMinutes)
-        etSec       = findViewById(R.id.etSeconds)
         btnStart    = findViewById(R.id.btnStart)
         btnStop     = findViewById(R.id.btnStopService)
+        btnAdd1     = findViewById(R.id.btnAdd1Min)
+        btnAdd5     = findViewById(R.id.btnAdd5Min)
 
-        // Камера
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         cameraId = cameraManager.cameraIdList.first { id ->
             cameraManager.getCameraCharacteristics(id)
                 .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
         }
 
-        // AlarmManager + PendingIntent
         alarmMgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val offIntent = Intent(this, TorchOffReceiver::class.java)
         alarmPi = PendingIntent.getBroadcast(
@@ -57,44 +60,31 @@ class MainActivity : AppCompatActivity() {
         btnStart.setOnClickListener {
             timer?.cancel()
             val mins = etMin.text.toString().toLongOrNull() ?: 0L
-            val secs = etSec.text.toString().toLongOrNull() ?: 0L
-            val total = mins*60 + secs
-            if (total <= 0) {
+            if (mins <= 0) {
                 Toast.makeText(this, "Укажите время больше нуля", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Включаем фонарик
+            timeLeftMs = mins * 60 * 1000
+
             cameraManager.setTorchMode(cameraId, true)
 
-            // Запускаем UI-таймер
-            timer = object: CountDownTimer(total*1000, 1000) {
-                override fun onTick(ms: Long) {
-                    val s = ms/1000
-                    tvCountdown.text = String.format("%02d:%02d", s/60, s%60)
-                }
-                override fun onFinish() {
-                    tvCountdown.text = "00:00"
-                }
-            }.apply{ start() }
-
-            // Ставим Alarm на выключение
-            val trigger = SystemClock.elapsedRealtime() + total*1000
-            alarmMgr.setExactAndAllowWhileIdle(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP, trigger, alarmPi
-            )
+            startTimer()
+            setAlarm()
         }
 
         btnStop.setOnClickListener {
-            // Останавливаем всё
-            timer?.cancel()
-            timer = null
-            tvCountdown.text = "00:00"
-            alarmMgr.cancel(alarmPi)
-            cameraManager.setTorchMode(cameraId, false)
+            stopTimer()
         }
 
-        // Если ещё нет admin-прав — попросим
+        btnAdd1.setOnClickListener {
+            addMinutes(1)
+        }
+
+        btnAdd5.setOnClickListener {
+            addMinutes(5)
+        }
+
         val comp = ComponentName(this, MyDeviceAdminReceiver::class.java)
         val dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
         if (!dpm.isAdminActive(comp)) {
@@ -104,6 +94,48 @@ class MainActivity : AppCompatActivity() {
                     "Нужны права для блокировки экрана.")
             })
         }
+    }
+
+    private fun startTimer() {
+        timer = object: CountDownTimer(timeLeftMs, 1000) {
+            override fun onTick(ms: Long) {
+                timeLeftMs = ms
+                val s = ms / 1000
+                tvCountdown.text = String.format("%02d:%02d", s / 60, s % 60)
+            }
+            override fun onFinish() {
+                tvCountdown.text = "00:00"
+            }
+        }.apply { start() }
+    }
+
+    private fun stopTimer() {
+        timer?.cancel()
+        timer = null
+        tvCountdown.text = "00:00"
+        timeLeftMs = 0
+        alarmMgr.cancel(alarmPi)
+        cameraManager.setTorchMode(cameraId, false)
+    }
+
+    private fun addMinutes(mins: Long) {
+        val addMs = mins * 60 * 1000
+        if (timer == null) {
+            val current = etMin.text.toString().toLongOrNull() ?: 0
+            etMin.setText((current + mins).toString())
+        } else {
+            timer?.cancel()
+            timeLeftMs += addMs
+            startTimer()
+            setAlarm()
+        }
+    }
+
+    private fun setAlarm() {
+        val trigger = SystemClock.elapsedRealtime() + timeLeftMs
+        alarmMgr.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP, trigger, alarmPi
+        )
     }
 
     override fun onDestroy() {
