@@ -10,19 +10,27 @@ import android.hardware.camera2.CameraManager
 
 class TorchOffReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
-        // Выключаем фонарик
-        val camMgr = ctx.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        val camId = camMgr.cameraIdList.first { id ->
-            camMgr.getCameraCharacteristics(id)
-                .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+        try {
+            val camMgr = ctx.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val camId = camMgr.cameraIdList.firstOrNull { id ->
+                camMgr.getCameraCharacteristics(id)
+                    .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+            }
+            if (camId != null) {
+                camMgr.setTorchMode(camId, false)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        camMgr.setTorchMode(camId, false)
 
-        // Блокируем экран, если админ-права есть
-        val dpm = ctx.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val comp = ComponentName(ctx, MyDeviceAdminReceiver::class.java)
-        if (dpm.isAdminActive(comp)) {
-            dpm.lockNow()
+        try {
+            val dpm = ctx.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            val comp = ComponentName(ctx, MyDeviceAdminReceiver::class.java)
+            if (dpm.isAdminActive(comp)) {
+                dpm.lockNow()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

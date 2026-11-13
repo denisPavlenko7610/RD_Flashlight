@@ -1,3 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">RD_FlashLight autoshutdown</string>
+    <string name="title_app">RD_FLASHLIGHT</string>
+    <string name="btn_start">START</string>
+    <string name="btn_stop">STOP</string>
+    <string name="btn_add_1m">+1m</string>
+    <string name="btn_add_5m">+5m</string>
+    <string name="hint_minutes">Minutes</string>
+    <string name="error_invalid_minutes">Укажите время больше нуля</string>
+    <string name="error_flash_not_found">Вспышка не найдена на устройстве</string>
+    <string name="error_flash_turn_on_failed">Не удалось включить фонарик</string>
+    <string name="error_exact_alarm_permission">Предоставьте разрешение на точные таймеры</string>
+    <string name="device_admin_explanation">Нужны права для блокировки экрана.</string>
 </resources>

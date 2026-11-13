@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "com.rdragon.rd_flashlightautoshutdown"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.rdragon.rd_flashlightautoshutdown"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 7
-        versionName = "1.3"
+        targetSdk = 36
+        versionCode = 9
+        versionName = "1.5"
     }
 
     packaging {
@@ -32,11 +32,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
     buildFeatures {
         compose = true
@@ -47,13 +49,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.activity.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.material.v190)
-    androidTestImplementation (libs.androidx.appcompat.v161)
-    androidTestImplementation( libs.material.v1110)
-    androidTestImplementation( libs.androidx.constraintlayout)
-
 }
